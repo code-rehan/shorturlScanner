@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URLScan Live Scanner</title>
+</head>
+<body>
+    <h2>Live Scan a Website using URLScan.io API</h2>
+    <input type="text" id="url" placeholder="Enter URL (e.g., https://iana.org)">
+    <button onclick="scan()">Scan</button>
+
+    <div id="result" style="margin-top:20px;"></div>
+
+    <script>
+        async function scan() {
+            const url = document.getElementById("url").value;
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "<p>Please wait, scanning...</p>";
+
+            try {
+                const res = await fetch(`http://localhost:8000/scan?domain=${encodeURIComponent(url)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style='color:red;'>${data.error}</p>`;
+                    return;
+                }
+
+                const verdict = data["Verdict (Readable)"];
+                resultDiv.innerHTML = `
+                    <p><strong>Input URL:</strong> ${data["Input URL"]}</p>
+                    <p><strong>Resolved URL:</strong> ${data["Resolved URL"]}</p>
+                    <p><strong>IP Address:</strong> ${data["IP Address"]}</p>
+                    <p><strong>City:</strong> ${data["City"]}</p>
+                    <p><strong>Country:</strong> ${data["Country"]}</p>
+                    <p><strong>ASN:</strong> ${data["ASN"]}</p>
+                    <p><strong>ASN Name:</strong> ${data["ASN Name"]}</p>
+                    <p><strong>Domain:</strong> ${data["Domain"]}</p>
+                    <p><strong>Server:</strong> ${data["Server"]}</p>
+                    <p><strong>TLS Issuer:</strong> ${data["TLS Issuer"]}</p>
+                    <p><strong>TLS Valid From:</strong> ${data["TLS Valid From"]}</p>
+                    <p><strong>TLS Valid To:</strong> ${data["TLS Valid To"]}</p>
+                    <p><strong>Safety Score (0-100):</strong> ${verdict["Score (0-100 Safety Rating)"]}</p>
+                    <p><strong>Malicious:</strong> ${verdict["Malicious"]}</p>
+                    <p><strong>Has Verdicts:</strong> ${verdict["Has Verdicts"]}</p>
+                    <p><strong>Categories:</strong> ${verdict["Categories"]}</p>
+                    <p><strong>Brands:</strong> ${verdict["Brands"]}</p>
+                    <p><strong>Tags:</strong> ${verdict["Tags"]}</p>
+                    <p><strong>Unique Countries:</strong> ${data["Unique Countries"]}</p>
+                    <p><strong>Processed At:</strong> ${data["Processed At"]}</p>
+                    ${data["Screenshot"] ? `<p><strong>Screenshot:</strong><br><img src="${data["Screenshot"]}" alt="Screenshot" style="width:600px;border:1px solid #ccc;"></p>` : ''}
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style='color:red;'>Fetch error: ${error}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
